@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent - Управление продуктами</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.agent {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            font-style: italic;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+        }
+
+        .input-group button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        .input-group button:hover {
+            background: #5568d3;
+        }
+
+        .input-group button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .examples {
+            margin-top: 20px;
+        }
+
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .example-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .products-section {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .products-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .product-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .product-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .product-item p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Agent</h1>
+            <p>Управление продуктами через MCP интеграцию</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #333;">💬 Чат с агентом</h2>
+                <div class="chat-container">
+                    <div class="chat-messages scrollbar-custom" id="chatMessages">
+                        <div class="message agent">
+                            <strong>Агент:</strong> Привет! Я AI агент для управления продуктами. Можете задать мне вопросы, например:
+                            <ul style="margin-top: 10px; padding-left: 20px;">
+                                <li>Покажи все продукты</li>
+                                <li>Какая средняя цена продуктов?</li>
+                                <li>Добавь новый продукт</li>
+                                <li>Посчитай скидку 15% на товар с ID 1</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="queryInput" placeholder="Введите ваш запрос..." onkeypress="handleKeyPress(event)">
+                        <button onclick="sendQuery()" id="sendBtn">Отправить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-bottom: 15px; color: #333;">📋 Быстрые примеры</h2>
+                <div class="examples">
+                    <button class="example-btn" onclick="sendExample('Покажи все продукты')">
+                        📦 Покажи все продукты
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Покажи все продукты в категории Электроника')">
+                        🔌 Покажи продукты в категории Электроника
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Какая средняя цена продуктов?')">
+                        💰 Какая средняя цена продуктов?
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Добавь новый продукт: Мышка, цена 1500, категория Электроника')">
+                        ➕ Добавь новый продукт: Мышка
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Посчитай скидку 15% на товар с ID 1')">
+                        🎯 Посчитай скидку 15% на товар с ID 1
+                    </button>
+                    <button class="example-btn" onclick="sendExample('Покажи продукт с ID 1')">
+                        🔍 Покажи продукт с ID 1
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 15px; color: #333;">📊 Текущие продукты</h2>
+            <div class="products-section scrollbar-custom" id="productsSection">
+                <p style="text-align: center; color: #999; padding: 20px;">Загрузка продуктов...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendQuery();
+            }
+        }
+
+        function addMessage(text, type = 'agent') {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            // Форматируем текст с переносами строк
+            const formattedText = text.replace(/\n/g, '<br>');
+            
+            if (type === 'user') {
+                messageDiv.innerHTML = `<strong>Вы:</strong> ${formattedText}`;
+            } else if (type === 'error') {
+                messageDiv.innerHTML = `<strong>Ошибка:</strong> ${formattedText}`;
+            } else if (type === 'loading') {
+                messageDiv.innerHTML = `<strong>Агент:</strong> ${formattedText}`;
+            } else {
+                messageDiv.innerHTML = `<strong>Агент:</strong> ${formattedText}`;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendQuery() {
+            const input = document.getElementById('queryInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const query = input.value.trim();
+
+            if (!query) return;
+
+            // Добавляем сообщение пользователя
+            addMessage(query, 'user');
+            input.value = '';
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Отправка...';
+
+            // Добавляем индикатор загрузки
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message loading';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = '<strong>Агент:</strong> Обрабатываю запрос...';
+            document.getElementById('chatMessages').appendChild(loadingDiv);
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+
+            try {
+                const response = await fetch(`${API_URL}/api/v1/agent/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+
+                // Удаляем индикатор загрузки
+                const loadingMsg = document.getElementById('loadingMessage');
+                if (loadingMsg) loadingMsg.remove();
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                addMessage(data.response, 'agent');
+                
+                // Обновляем список продуктов
+                if (query.toLowerCase().includes('покажи') || query.toLowerCase().includes('добавь')) {
+                    loadProducts();
+                }
+            } catch (error) {
+                const loadingMsg = document.getElementById('loadingMessage');
+                if (loadingMsg) loadingMsg.remove();
+                addMessage(error.message, 'error');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Отправить';
+            }
+        }
+
+        function sendExample(query) {
+            document.getElementById('queryInput').value = query;
+            sendQuery();
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/agent/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: 'Покажи все продукты' })
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const productsText = data.response;
+                
+                // Парсим продукты из ответа
+                const productsDiv = document.getElementById('productsSection');
+                productsDiv.innerHTML = '';
+
+                // Парсинг улучшенного формата
+                if (productsText.includes('📦')) {
+                    const productBlocks = productsText.split('\n\n');
+                    productBlocks.forEach(block => {
+                        if (block.includes('📦')) {
+                            const lines = block.split('\n');
+                            let name = '', id = '', price = '', category = '', inStock = false;
+                            
+                            lines.forEach(line => {
+                                if (line.includes('📦')) {
+                                    name = line.replace('📦', '').trim();
+                                } else if (line.includes('ID:')) {
+                                    id = line.split('ID:')[1].trim();
+                                } else if (line.includes('Цена:')) {
+                                    price = line.split('Цена:')[1].trim();
+                                } else if (line.includes('Категория:')) {
+                                    category = line.split('Категория:')[1].trim();
+                                } else if (line.includes('✅')) {
+                                    inStock = true;
+                                }
+                            });
+                            
+                            if (name) {
+                                const productDiv = document.createElement('div');
+                                productDiv.className = 'product-item';
+                                productDiv.innerHTML = `
+                                    <h4>${name}</h4>
+                                    <p><strong>ID:</strong> ${id}</p>
+                                    <p><strong>Цена:</strong> ${price}</p>
+                                    <p><strong>Категория:</strong> ${category}</p>
+                                    <span class="badge ${inStock ? 'in-stock' : 'out-of-stock'}">
+                                        ${inStock ? '✅ В наличии' : '❌ Нет в наличии'}
+                                    </span>
+                                `;
+                                productsDiv.appendChild(productDiv);
+                            }
+                        }
+                    });
+                } else if (productsText.includes('ID:')) {
+                    // Старый формат для обратной совместимости
+                    const lines = productsText.split('\n');
+                    lines.forEach(line => {
+                        if (line.includes('ID:')) {
+                            const match = line.match(/ID: (\d+), (.+?), (\d+)₽, (.+)/);
+                            if (match) {
+                                const [, id, name, price, category] = match;
+                                const productDiv = document.createElement('div');
+                                productDiv.className = 'product-item';
+                                productDiv.innerHTML = `
+                                    <h4>${name.trim()}</h4>
+                                    <p><strong>ID:</strong> ${id}</p>
+                                    <p><strong>Цена:</strong> ${price}₽</p>
+                                    <p><strong>Категория:</strong> ${category.trim()}</p>
+                                `;
+                                productsDiv.appendChild(productDiv);
+                            }
+                        }
+                    });
+                } else {
+                    productsDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Продукты не найдены</p>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки продуктов:', error);
+            }
+        }
+
+        // Загружаем продукты при загрузке страницы
+        window.addEventListener('load', () => {
+            loadProducts();
+        });
+    </script>
+</body>
+</html>

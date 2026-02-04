@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Ноутбук",
+    "price": 50000,
+    "category": "Электроника",
+    "in_stock": true
+  },
+  {
+    "id": 2,
+    "name": "Смартфон",
+    "price": 30000,
+    "category": "Электроника",
+    "in_stock": true
+  },
+  {
+    "id": 3,
+    "name": "Стол",
+    "price": 8000,
+    "category": "Мебель",
+    "in_stock": false
+  },
+  {
+    "id": 4,
+    "name": "Новый",
+    "price": 1500.0,
+    "category": "Я электроника",
+    "in_stock": true
+  },
+  {
+    "id": 5,
+    "name": "Еще",
+    "price": 0.0,
+    "category": "Другое",
+    "in_stock": true
+  }
+]
